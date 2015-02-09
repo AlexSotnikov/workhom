@@ -1,61 +1,84 @@
+module SVG
+  def method_missing(atribut, val)
+      atribut = val
+  end
+  def line &block
+    instance_eval &block
+    '<line x1="'+@x1.to_s+'" y1="'+@y1.to_s+'" stroke="black'+
+    '" x2="'+@x2.to_s+'" y2="'+@y2.to_s+'" stroke-width="'+@f.to_s+'" /> '
+  end
+  def rect &block
+    instance_eval &block
+    '<rect x="'+@x.to_s+'" y="'+@y.to_s+
+    '" width="'+@w.to_s+'" height="'+@h.to_s+'" />'
+  end
+  def circle &block
+    instance_eval &block
+    '<circle cx="'+@cx.to_s+'" cy="'+@cy.to_s+
+    '" r="'+@r.to_s+'" fill="'+@f.to_s+'" stroke="black" stroke-width="1" />'
+  end  
+end
 class Line
+  include SVG
   def initialize(x1,y1,x2,y2,f=1)
-    @x1=x1
-	@y1=y1
-	@x2=x2
-	@y2=y2
-	@f=f
+    @x1=x1;@y1=y1;@x2=x2;@y2=y2;@f=f
   end
-  def draft
-    s=('<line x1="')+(@x1.to_s)+('" y1="')+(@y1.to_s)+('" stroke="black')+
-	('" x2="')+(@x2.to_s)+('" y2="')+(@y2.to_s)+('" stroke-width="')+(@f.to_s)+('" />')
+  def draw
+    line do
+      x1 @x1
+      x2 @x2
+      y1 @y1
+      y2 @y2
+      f @f
+    end
   end
-end  
+end   
 class Rect
+  include SVG
   def initialize(x,y,w,h)
-    @x=x
-	@y=y
-	@w=w
-	@h=h
+    @x=x;@y=y;@w=w;@h=h
   end
-  def draft
-    s=('<rect x="')+(@x.to_s)+('" y="')+(@y.to_s)+
-	('" width="')+(@w.to_s)+('" height="')+(@h.to_s)+('" />')
+  def draw
+    rect do 
+      x @x
+      y @y
+      h @h
+      w @w
+    end
   end
 end  
 class Circle
+  include SVG
   def initialize(x,y,r,f='none')
-    @x=x
-	@y=y
-	@r=r
-	@f=f
+    @cx=x;@cy=y;@r=r;@f=f
   end
-  def draft
-    s=('<circle cx="')+(@x.to_s)+('" cy="')+(@y.to_s)+
-	('" r="')+(@r.to_s)+('" fill="')+(@f)+('" />')  
+  def draw
+    circle do
+      cx @cx
+      cy @cy
+      r @r
+      f @f
+    end
   end
 end
-class Arrow < Line  
-  def draft
-    if @x2<@x1
-	  x=@x2+3
-	  y=@y1-@y2
-	else
-      x=@x2-3
-	  y=@y2-@y1
-	end
-    if @y1==@y2
-      s=('<line x1="')+(@x1.to_s)+('" y1="')+(@y1.to_s)+('" stroke="black')+
-	  ('" x2="')+(@x2.to_s)+('" y2="')+(@y2.to_s)+('" stroke-width="')+(@f.to_s)+('" /> ')+
-      ('<polygon points="')+(@x2.to_s)+(' ')+(@y2.to_s)+(', ')+(x.to_s)+(' ')+
-	  ((@y2-3).to_s)+(', ')+(x.to_s)+(' ')+((@y2+3).to_s)+('"/> ')
-	else
-	  s=('<line x1="')+(@x1.to_s)+('" y1="')+(@y1.to_s)+('" stroke="black')+
-	  ('" x2="')+(@x2.to_s)+('" y2="')+(@y2.to_s)+('" stroke-width="')+(@f.to_s)+('" /> ')+
-      ('<polygon points="')+(@x2.to_s)+(' ')+(@y2.to_s)+(', ')+(x.to_s)+(' ')+
-	  ((@y2-3).to_s)+(', ')+(x.to_s)+(' ')+((@y2+3).to_s)+('" transform="rotate(')+
-	  ((y*2.5).to_s)+(', ')+(@x2.to_s)+(', ')+(@y2.to_s)+(')" /> ')
-    end
+class Arrow 
+  include SVG
+  def initialize(x1,y1,x2,y2,f=1)
+    @x1=x1;@y1=y1;@x2=x2;@y2=y2;@f=f 
+  end
+  def draw
+    (line do
+      x1 @x1
+      x2 @x2
+      y1 @y1
+      y2 @y2
+    end)+
+      (rect do
+      x @x=@x2-2
+      y @y=@y2-2
+      h @h=4
+      w @w=7
+    end)
   end	
 end
 elements = [
@@ -110,7 +133,7 @@ File.open('image.svg','wb') do |f|
   f.puts('<?xml version="1.0" encoding="UTF-8" standalone="no"?>
   <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="300" height="300">')
   elements.each do |el|
-    f.puts(el.draft)
+    f.puts(el.draw)
   end	 
      
    f.puts('</svg>')

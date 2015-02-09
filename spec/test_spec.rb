@@ -1,5 +1,6 @@
 require_relative 'spec_helper'
 require_relative '../work2'
+require_relative '../work4'
 
 describe 'Work2' do
   it 'Test Reduce' do
@@ -53,5 +54,20 @@ describe 'Work2' do
   it 'Test merge' do
     merge({},{}).should eq({})
   end
-    
 end
+describe 'Work4' do
+  it 'Test class Line draw' do
+    Line.new(50, 160, 50, 220).draw.should eq('<line x1="50" y1="160" stroke="black" x2="50" y2="220" stroke-width="1" /> ')
+  end
+  it 'Test cass Rect draw' do
+    Rect.new(42, 120, 16, 40).draw.should eq('<rect x="42" y="120" width="16" height="40" />')
+  end
+  it 'Test Circle draw' do
+    Circle.new(50, 180, 3, 'black').draw.should eq('<circle cx="50" cy="180" r="3" fill="black" stroke="black" stroke-width="1" />')
+    Circle.new(70, 235, 25).draw.should eq('<circle cx="70" cy="235" r="25" fill="none" stroke="black" stroke-width="1" />')
+    end
+  it 'Test Arrow draw' do
+    Arrow.new(200, 250, 175, 240).draw.should eq('<line x1="200" y1="250" stroke="black" x2="175" y2="240" stroke-width="1" /> <rect x="173" y="238" width="7" height="4" />')
+  end
+end
+    
