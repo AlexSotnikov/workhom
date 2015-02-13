@@ -1,3 +1,4 @@
+require 'rack'
 module SVG
   def method_missing(atribut, val)
       atribut = val
@@ -137,4 +138,9 @@ File.open('image.svg','wb') do |f|
   end	 
      
    f.puts('</svg>')
- end  
+end
+f = File.new("image.svg")
+content = f.read
+f.close
+Rack::Server.start :app => lambda {|env| [200, {}, [content]] }
+
