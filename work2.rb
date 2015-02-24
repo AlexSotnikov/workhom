@@ -1,3 +1,15 @@
+def fib(n)
+   f0=0
+   f1=1
+   for i in(2..n)
+     f=f0+f1
+     f0=f1
+     f1=f
+   end
+   if n==0
+     f1=0
+   end
+ end
 def reduce(arr,ak)
   for e in(arr)
      if block_given? 
@@ -140,5 +152,4 @@ def merge(h1,h2)
   h2.each{|k,v| h1[k]=v} 
   h1
 end
-p merge({'a'=>1},{'b'=>2})
 #----------------------------------

@@ -1,84 +1,88 @@
-require 'rack'
-module SVG
-  def method_missing(atribut, val)
-      atribut = val
+class Attr
+  def initialize
+    $kord='<'+$nam+' '
   end
-  def line &block
-    instance_eval &block
-    '<line x1="'+@x1.to_s+'" y1="'+@y1.to_s+'" stroke="black'+
-    '" x2="'+@x2.to_s+'" y2="'+@y2.to_s+'" stroke-width="'+@f.to_s+'" /> '
+  def upgrade(s)
+    s=s.split('_')
+    s=s.join('-')
   end
-  def rect &block
-    instance_eval &block
-    '<rect x="'+@x.to_s+'" y="'+@y.to_s+
-    '" width="'+@w.to_s+'" height="'+@h.to_s+'" />'
+  def method_missing(name,val)
+    $kord << (upgrade(name.to_s)+'="'+val.to_s+ '" ') 
+  end 
+end
+class SVG 
+  $nam
+  def self.method_missing(name, *args, &block)
+    $nam=name.to_s 
+    attrs_collector = Attr.new
+    block_context = eval 'self', block.binding
+    block_context.instance_variables.each do |var_name|
+      attrs_collector.instance_variable_set(var_name, block_context.instance_variable_get(var_name))
+    end 
+    attrs_collector.instance_eval &block
+    $kord << '/>'
   end
-  def circle &block
-    instance_eval &block
-    '<circle cx="'+@cx.to_s+'" cy="'+@cy.to_s+
-    '" r="'+@r.to_s+'" fill="'+@f.to_s+'" stroke="black" stroke-width="1" />'
-  end  
 end
 class Line
-  include SVG
   def initialize(x1,y1,x2,y2,f=1)
     @x1=x1;@y1=y1;@x2=x2;@y2=y2;@f=f
   end
   def draw
-    line do
+    SVG.line do
       x1 @x1
       x2 @x2
       y1 @y1
       y2 @y2
-      f @f
+      stroke_width @f
+      stroke "black"
     end
   end
 end   
 class Rect
-  include SVG
   def initialize(x,y,w,h)
     @x=x;@y=y;@w=w;@h=h
   end
   def draw
-    rect do 
+    SVG.rect do 
       x @x
       y @y
-      h @h
-      w @w
+      width @w
+      height @h
     end
   end
 end  
 class Circle
-  include SVG
   def initialize(x,y,r,f='none')
     @cx=x;@cy=y;@r=r;@f=f
   end
   def draw
-    circle do
+    SVG.circle do
       cx @cx
       cy @cy
       r @r
-      f @f
+      fill @f
+      stroke "black"
     end
   end
 end
 class Arrow 
-  include SVG
   def initialize(x1,y1,x2,y2,f=1)
     @x1=x1;@y1=y1;@x2=x2;@y2=y2;@f=f 
   end
   def draw
-    (line do
+    (SVG.line do
       x1 @x1
       x2 @x2
       y1 @y1
       y2 @y2
+      stroke_width @f
+      stroke "black"
     end)+
-      (rect do
+      (SVG.rect do
       x @x=@x2-2
       y @y=@y2-2
-      h @h=4
-      w @w=7
+      height @h=3
+      width @w=6
     end)
   end	
 end
@@ -139,8 +143,12 @@ File.open('image.svg','wb') do |f|
      
    f.puts('</svg>')
 end
-f = File.new("image.svg")
-content = f.read
-f.close
-Rack::Server.start :app => lambda {|env| [200, {}, [content]] }
+class Myapp
+  def call(ehv)
+   f = File.new("image.svg")
+   content = f.read
+   f.close
+   p [200,{"Content" => "image/svg+hml"}, [content]]
+  end
+end
 
